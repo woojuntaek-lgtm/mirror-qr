@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151a22">
+<title>거울 분해소</title>
+<meta name="description" content="공식은 못 풀고 QR은 풀었다? — QR 분해: 그람 슈미트로 Q와 R 만들기, 길이를 지키는 Q, 후진 대입과 행렬식, 부동소수점과 직교성 손실, 하우스홀더 거울과 기븐스 회전, 조건수와 AᵀA의 함정, QR 반복으로 고윳값 찾기를 손으로 체험하는 앱">
+<style>
+:root{--bg:#151a22;--card:#1c232e;--card2:#25303d;--fg:#eff3f8;--mut:#a3b0c2;--line:#33425a;
+--a:#7cc4ff;--b:#ff9b5c;--ok:#6fdc9a;--bad:#ff7d7d;--gold:#ffd166;--pur:#b79cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.55}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:1.2rem;margin:6px 0}
+h1 small{display:block;font-size:.76rem;color:var(--mut);font-weight:400}
+.tabs{display:flex;gap:5px;margin:10px 0}
+.tabs button{flex:1;padding:9px 2px;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;font-size:.82rem;font-weight:600}
+.tabs button.on{background:#24406e;color:#fff;border-color:var(--a)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+h2{font-size:1rem;margin:2px 0 8px}
+.note{font-size:.86rem;color:var(--mut);margin:8px 0 0}
+.note b{color:var(--fg)}
+.btn{padding:11px 14px;border-radius:12px;border:0;background:linear-gradient(135deg,#2f6fd0,#7cc4ff);color:#fff;font-weight:800;font-size:.95rem;flex:1}
+.btn.sec{background:var(--card2);border:1px solid var(--line);color:var(--fg);font-weight:700}
+.btn.sm{flex:none;padding:7px 11px;font-size:.82rem}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row+.row{margin-top:8px}
+.pill{padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.84rem}
+.pill.on{border-color:var(--gold);background:#4a3e1a;color:#fff}
+.lbl{font-size:.8rem;color:var(--mut)}
+canvas{display:block;width:100%;border-radius:12px;background:#10141b;margin-top:8px;touch-action:none}
+.say{background:#16304c;border-left:3px solid var(--a);border-radius:8px;padding:9px 11px;font-size:.92rem;margin-top:10px}
+.say b{color:#fff}
+.say.q{border-left-color:var(--b);background:#2e2118}
+.res{margin-top:10px;font-size:.92rem;border-radius:10px;padding:10px 12px}
+.res.g{background:#16352a;border:1px solid #2f7a52}
+.res.r{background:#3a1d1d;border:1px solid #8a3a3a}
+.res.y{background:#3a3218;border:1px solid #8a7a3a}
+.code{background:#0f131a;border:1px solid #26324a;border-radius:10px;padding:9px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.65;white-space:pre;overflow-x:auto;margin-top:8px}
+.code .k{color:#ff9bd2}.code .s{color:#a5e38a}.code .c{color:#6b7a90}.code .n{color:#ffd166}.code .f{color:#7cc4ff}
+.out{background:#0b0e13;border-radius:10px;padding:8px 11px;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;white-space:pre-wrap;word-break:break-all}
+.out .p{color:#6b7a90}.out .o{color:#6fdc9a}.out .w{color:#ffd166}.out .e{color:#ff7d7d}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.opts button{text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.92rem}
+.opts button.right{border-color:#6fdc9a;background:#16352a}
+.opts button.wrong{border-color:#ff7d7d;background:#3a1d1d}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.stats div{background:var(--card2);border-radius:10px;padding:7px 6px;text-align:center;font-size:.74rem;color:var(--mut)}
+.stats div b{display:block;font-size:1.02rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:84px 1fr 54px;gap:8px;align-items:center;font-size:.84rem;margin-top:6px}
+.sl b{text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%}
+input[type=text]{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#10141b;color:var(--fg);font-size:.92rem}
+.sum3{margin-top:12px;background:linear-gradient(135deg,#1d3358,#3a2a5a);border-radius:14px;padding:12px 14px}
+.sum3 ol{margin:4px 0;padding-left:20px;font-size:.92rem}
+.mine{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mine div{display:flex;justify-content:space-between;gap:8px;background:var(--card2);border-radius:10px;padding:8px 10px;font-size:.88rem}
+.mine button{border:0;background:none;color:var(--mut);font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+footer{text-align:center;color:var(--mut);font-size:.78rem;margin-top:18px}
+footer a{color:var(--mut)}
+.tw{overflow-x:auto;margin-top:8px;border-radius:10px;border:1px solid #26324a}
+table.df{border-collapse:collapse;width:100%;font-size:.82rem;font-variant-numeric:tabular-nums;background:#0f131a}
+table.df th,table.df td{padding:6px 8px;text-align:center;border-bottom:1px solid #222b38}
+table.df thead th{background:#1a2230;color:#a3b0c2}
+.ax{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.ax button{padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.8rem}
+.mat{display:inline-grid;gap:2px 10px;padding:4px 8px;border-left:2px solid #6b7a90;border-right:2px solid #6b7a90;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;text-align:right;vertical-align:middle}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🪞 거울 분해소<small>공식은 못 풀고 QR은 풀었다? — QR 분해</small></h1>
+<div class="tabs">
+  <button class="on" data-tab="t1">① Q와 R</button>
+  <button data-tab="t2">② 풀기</button>
+  <button data-tab="t3">③ 거울·회전</button>
+  <button data-tab="t4">④ 조건수</button>
+</div>
+
+<!-- ① -->
+<section id="tab-t1">
+  <div class="card">
+    <h2>💥 첫 장면: 같은 데이터, 다른 운명</h2>
+    <p class="note" style="margin-top:0">측정값 세 개로 미지수 두 개를 맞추는 최소제곱 문제. 두 열의 차이는 <b>1억 분의 1</b>, 정답은 <b>(1, 1)</b>로 정해 두었습니다. 이 앱의 계산은 휴대폰 브라우저가 <b>실제로</b> 합니다(배정밀도).</p>
+    <div class="out">A = [[1, 1], [1e-8, 0], [0, 1e-8]]    b = A·(1, 1)</div>
+    <div class="row" style="margin-top:8px"><button class="btn sec" id="hkN">교과서 공식 (AᵀA)⁻¹Aᵀb</button><button class="btn" id="hkQ">QR 분해로 풀기</button></div>
+    <div class="out" id="hkOut"><span class="p">버튼을 눌러 보세요.</span></div>
+    <div id="hkMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>✂️ 행렬을 둘로: 그람 슈미트로 Q와 R 만들기</h2>
+    <p class="note" style="margin-top:0">A의 두 열 <b style="color:#7cc4ff">a₁</b>, <b style="color:#ff9b5c">a₂</b>의 끝을 끌어 보세요. R에는 <b>줄인 길이와 뺀 그림자</b>가 적힙니다.</p>
+    <canvas id="gsCv"></canvas>
+    <div class="row" style="margin-top:8px"><button class="btn sec sm" id="gsEx">원고 예 a₁=(3,4), a₂=(2,1)</button></div>
+    <div class="mrow" id="gsM"></div>
+    <div class="out" id="gsOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>❓ 퀴즈 ① Q = [[0.6, 0.8], [0.8, −0.6]]를 (3, 4)에 곱한 벡터의 길이는?</h2>
+    <div class="opts" id="q1">
+      <button data-a="a">5</button>
+      <button data-a="b">7</button>
+      <button data-a="c">25</button>
+    </div>
+    <div id="q1Msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔄 뒤집기만 하면 역행렬, Q</h2>
+    <p class="note" style="margin-top:0">벡터 <b>v</b>를 끌어 보세요. Q를 곱해도 <b>길이</b>와 <b>각도</b>는 그대로 — 돌리거나 뒤집을 뿐입니다.</p>
+    <canvas id="qvCv"></canvas>
+    <div class="stats"><div>‖v‖<b id="qv1">-</b></div><div>‖Qv‖<b id="qv2">-</b></div><div>QᵀQ<b>I (단위 행렬)</b></div></div>
+    <div class="out" id="qvOut"></div>
+  </div>
+</section>
+
+<!-- ② -->
+<section id="tab-t2" hidden>
+  <div class="card">
+    <h2>🔺 아래가 비어 있는 R: 후진 대입</h2>
+    <p class="note" style="margin-top:0">Ax = b → QRx = b → 양변에 Qᵀ → <b>Rx = Qᵀb</b>. 역행렬은 한 번도 구하지 않습니다. b를 바꿔 보세요.</p>
+    <div class="sl"><span>b₁</span><input type="range" id="bsB1" min="-10" max="12" value="7"><b id="bsB1v">7</b></div>
+    <div class="sl"><span>b₂</span><input type="range" id="bsB2" min="-10" max="12" value="6"><b id="bsB2v">6</b></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="bsNext">다음 단계 ▶</button><button class="btn sec sm" id="bsReset">처음부터</button></div>
+    <div class="out" id="bsOut"></div>
+    <div id="bsMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>❓ 퀴즈 ② R = [[5, 2], [0, 1]], Rx = (9, 2)일 때 x는?</h2>
+    <div class="opts" id="q2">
+      <button data-a="a">(1, 2)</button>
+      <button data-a="b">(2, 1)</button>
+      <button data-a="c">(1.8, 2)</button>
+    </div>
+    <div id="q2Msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧮 행렬식은 대각선 곱</h2>
+    <div class="out" id="dtOut"></div>
+    <p class="cap">① 탭에서 a₁, a₂를 바꾸면 여기도 바뀝니다.</p>
+  </div>
+</section>
+
+<!-- ③ -->
+<section id="tab-t3" hidden>
+  <div class="card">
+    <h2>🔢 컴퓨터는 소수점 아래 16자리쯤까지만</h2>
+    <div class="sl"><span>작은 수 10⁻ᵏ</span><input type="range" id="fpK" min="1" max="20" value="8"><b id="fpKv">8</b></div>
+    <div class="out" id="fpOut"></div>
+    <div class="say">거의 같은 두 수를 빼면 앞자리가 서로 지워지고 <b>믿을 수 없는 뒷자리</b>만 남습니다. 직교화는 그림자 빼기의 연속이라 이 오차가 쌓입니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>📐 힐베르트 행렬 직교화 대결</h2>
+    <p class="note" style="margin-top:0">H[i][j] = 1/(i+j+1) — 열들이 서로 아주 비슷한 행렬. 세 방식으로 Q를 만들고 <b>QᵀQ가 I에서 얼마나 어긋나는지</b> 이 기기에서 직접 계산합니다.</p>
+    <div class="sl"><span>크기 n</span><input type="range" id="hbN" min="3" max="12" value="10"><b id="hbNv">10</b></div>
+    <canvas id="hbCv"></canvas>
+    <div class="out" id="hbOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>🪞 거울로 지우기: 하우스홀더</h2>
+    <p class="note" style="margin-top:0">벡터 <b>x</b>를 끌어 보세요. x와 가로축 사이를 정확히 가르는 직선을 <b>거울</b>로 삼아 비추면, 길이는 그대로 두고 아래 성분을 한 번에 0으로 만듭니다.</p>
+    <canvas id="hhCv"></canvas>
+    <div class="out" id="hhOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>🎯 하나씩 돌려 지우기: 기븐스 회전</h2>
+    <p class="note" style="margin-top:0">대부분이 0인 희소 행렬. 기븐스는 <b>두 줄</b>만 골라 돌려 원소 <b>하나</b>를 정확히 0으로 만듭니다. 이미 0인 곳은 건드리지 않습니다.</p>
+    <canvas id="gvCv"></canvas>
+    <div class="row" style="margin-top:8px"><button class="btn" id="gvNext">다음 회전 ▶</button><button class="btn sec sm" id="gvReset">처음부터</button></div>
+    <div class="out" id="gvOut"></div>
+    <div class="say">거울은 <b>한 번에 많이</b>, 회전은 <b>정밀하게 하나씩</b>. 둘 다 길이를 지키는 직교 변환이라 오차를 키우지 않습니다.</div>
+  </div>
+</section>
+
+<!-- ④ -->
+<section id="tab-t4" hidden>
+  <div class="card">
+    <h2>🔍 오차를 키우는 배율, 조건수</h2>
+    <p class="note" style="margin-top:0">첫 장면의 행렬 A = [[1, 1], [ε, 0], [0, ε]]. ε을 줄이면 두 열이 점점 같아집니다(다중공선성).</p>
+    <div class="sl"><span>ε = 10⁻ᵏ</span><input type="range" id="cnK" min="1" max="10" value="8"><b id="cnKv">8</b></div>
+    <div class="stats"><div>cond(A)<b id="cn1">-</b></div><div>cond(AᵀA)<b id="cn2" style="color:#ff7d7d">-</b></div><div>cond(Q)<b style="color:#6fdc9a">1</b></div></div>
+    <div class="out" id="cnOut"></div>
+    <div id="cnMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔁 QR이 일하는 곳: 고윳값 찾기</h2>
+    <p class="note" style="margin-top:0">A = QR로 나눈 뒤 순서를 바꿔 <b>RQ</b>로 다시 곱하기를 되풀이하면 대각선에 고윳값이 모입니다.</p>
+    <div class="out" id="qaM">A₀ = [[2, 1], [1, 2]]</div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="qaNext">QR → RQ 한 번 ▶</button><button class="btn sec sm" id="qaReset">처음부터</button></div>
+    <canvas id="qaCv"></canvas>
+    <div class="out" id="qaOut"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚖️ 분해 삼총사</h2>
+    <div class="tw"><table class="df"><thead><tr><th></th><th>LU</th><th>QR</th><th>SVD</th></tr></thead><tbody>
+      <tr><th>속도</th><td>빠름</td><td>중간</td><td>무거움</td></tr>
+      <tr><th>안정성</th><td>예민한 데이터에 약함</td><td>좋음</td><td>가장 안정</td></tr>
+      <tr><th>대표 쓰임</th><td>정방 연립방정식</td><td>최소제곱의 표준 도구</td><td>랭크·압축·가장 까다로운 문제</td></tr></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>🐍 넘파이로 한 줄</h2>
+    <div class="code"><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> scipy.linalg <span class="k">import</span> solve_triangular
+A = np.array([[<span class="n">3.</span>, <span class="n">2</span>], [<span class="n">4</span>, <span class="n">1</span>]])
+Q, R = np.linalg.<span class="f">qr</span>(A)      <span class="c"># Q 첫 열 (-0.6, -0.8), R 첫 줄 (-5, -2) — 부호만 반대</span>
+Q.T @ Q                       <span class="c"># 단위 행렬</span>
+x = <span class="f">solve_triangular</span>(R, Q.T @ np.array([<span class="n">7.</span>, <span class="n">6</span>]))   <span class="c"># [1. 2.]</span>
+
+A = np.array([[<span class="n">1</span>, <span class="n">1</span>], [<span class="n">1e-8</span>, <span class="n">0</span>], [<span class="n">0</span>, <span class="n">1e-8</span>]]); b = A @ [<span class="n">1</span>, <span class="n">1</span>]
+np.linalg.<span class="f">solve</span>(A.T @ A, A.T @ b)   <span class="c"># LinAlgError: Singular matrix</span>
+Q, R = np.linalg.<span class="f">qr</span>(A)
+np.linalg.<span class="f">solve</span>(R, Q.T @ b)         <span class="c"># [1. 1.]</span>
+np.linalg.<span class="f">cond</span>(A)                    <span class="c"># 약 1.414e8</span>
+np.linalg.<span class="f">lstsq</span>(A, b, rcond=<span class="k">None</span>)[<span class="n">0</span>]  <span class="c"># 더 안정적인 방법이 알아서</span></div>
+  </div>
+
+  <div class="card">
+    <h2>📌 세 줄 정리</h2>
+    <div class="sum3"><ol>
+      <li><b>QR 분해</b>는 행렬을 직교 행렬 Q와 위 삼각 행렬 R로 나누고, Q의 역행렬은 <b>전치</b>, R은 <b>후진 대입</b>으로 푼다.</li>
+      <li>컴퓨터 속 직교화는 <b>뺄셈 오차</b>가 쌓이니 하우스홀더 <b>거울</b>이나 기븐스 <b>회전</b>을 쓴다.</li>
+      <li><b>AᵀA는 조건수를 제곱</b>으로 키우니, 최소제곱은 역행렬 대신 <b>분해</b>로 푼다.</li>
+    </ol></div>
+  </div>
+
+  <div class="card">
+    <h2>🤔 생각해 볼 질문</h2>
+    <p class="note" style="margin-top:0">내 데이터에서 <b>거의 같은 움직임</b>을 보이는 두 변수는? 그 둘을 함께 넣은 모델의 답은 얼마나 믿을 수 있을까요? (이 기기에만 저장)</p>
+    <div class="row" style="margin-top:8px"><input type="text" id="myIn" maxlength="60" placeholder="예: 키와 다리 길이 — 계수가 이상하게 나옴"><button class="btn sm" id="myAdd">추가</button></div>
+    <div class="mine" id="mine"></div>
+  </div>
+</section>
+
+<footer>© 2026 정필 수심명 · <a href="https://blog.naver.com/omyman" target="_blank" rel="noopener">blog.naver.com/omyman</a><br>선형대수 11 부록 · 인터넷 없이 동작</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800);}
+let touched=false;document.addEventListener('pointerdown',()=>{touched=true;},{once:true,capture:true});
+const vib=n=>{if(!touched)return;try{navigator.vibrate&&navigator.vibrate(n);}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function prep(cv,ratio){const dpr=Math.min(2,window.devicePixelRatio||1),w=cv.clientWidth||320,h=Math.round(w*ratio);
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return{c,w,h};}
+function T(c,s,x,y,col,size,al,bl,wt){c.fillStyle=col;c.font=`${wt||''} ${size||12}px -apple-system,"Malgun Gothic",sans-serif`;c.textAlign=al||'center';c.textBaseline=bl||'middle';c.fillText(s,x,y);}
+function single(sel,attr,fn){$$(sel).forEach(b=>b.onclick=()=>{$$(sel).forEach(x=>x.classList.toggle('on',x===b));vib(8);fn(b.dataset[attr]);});}
+function quiz(id,ans,fn){$$(`#${id} button`).forEach(b=>b.onclick=()=>{const ok=b.dataset.a===ans;$$(`#${id} button`).forEach(x=>x.className=x.dataset.a===ans?'right':x===b?'wrong':'');vib(ok?[30,40,60]:80);$(`#${id}Msg`).innerHTML=fn(ok);});}
+function rr(c,x,y,w,h,r){r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+const CA='#7cc4ff',CB='#ff9b5c',GO='#ffd166',OK='#6fdc9a',BAD='#ff7d7d',PU='#b79cff',MU='#a3b0c2';
+const sup=n=>String(n).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(d)]||(d==='-'?'⁻':d)).join('');
+const fx=(v,d)=>{d=d==null?3:d;if(!isFinite(v))return String(v);if(v===0)return'0';const a=Math.abs(v);if(a<1e-4||a>=1e6){const e=Math.floor(Math.log10(a)),m=v/10**e;return`${m.toFixed(2)}×10${sup(e)}`;}const s=v.toFixed(d);return s.includes('.')?s.replace(/0+$/,'').replace(/\.$/,''):s;};
+/* 선형대수 */
+const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0),nrm=a=>Math.sqrt(dot(a,a));
+const I=n=>Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?1:0));
+const tr=M=>M[0].map((_,j)=>M.map(r=>r[j]));const mm=(A,B)=>A.map(r=>B[0].map((_,j)=>r.reduce((s,x,k)=>s+x*B[k][j],0)));const mv=(A,v)=>A.map(r=>dot(r,v));
+function hhQR(A){const m=A.length,n=A[0].length;const R=A.map(r=>r.slice());const Q=I(m);
+  for(let k=0;k<Math.min(m-1,n);k++){const x=[];for(let i=k;i<m;i++)x.push(R[i][k]);const nx=nrm(x);if(nx===0)continue;const v=x.slice();v[0]+=(x[0]>=0?1:-1)*nx;const nv=nrm(v);if(nv===0)continue;for(let i=0;i<v.length;i++)v[i]/=nv;
+    for(let j=0;j<n;j++){let d=0;for(let i=0;i<v.length;i++)d+=v[i]*R[k+i][j];for(let i=0;i<v.length;i++)R[k+i][j]-=2*v[i]*d;}
+    for(let r=0;r<m;r++){let d=0;for(let i=0;i<v.length;i++)d+=Q[r][k+i]*v[i];for(let i=0;i<v.length;i++)Q[r][k+i]-=2*d*v[i];}}
+  return{Q,R};}
+function backSub(R,y){const n=y.length,x=Array(n).fill(0);for(let i=n-1;i>=0;i--){let s=y[i];for(let j=i+1;j<n;j++)s-=R[i][j]*x[j];x[i]=s/R[i][i];}return x;}
+function qrSolve(A,b){const{Q,R}=hhQR(A);const n=A[0].length;const y=mv(tr(Q),b).slice(0,n);return backSub(R.slice(0,n).map(r=>r.slice(0,n)),y);}
+function cols(A){return A[0].map((_,j)=>A.map(r=>r[j]));}
+function cgs(A){const C=cols(A),Q=[];C.forEach(a=>{const v=a.slice();Q.forEach(q=>{const r=dot(q,a);for(let i=0;i<v.length;i++)v[i]-=r*q[i];});const n=nrm(v);Q.push(v.map(x=>x/n));});return Q;}
+function mgs(A){const V=cols(A).map(c=>c.slice()),Q=[];for(let j=0;j<V.length;j++){const n=nrm(V[j]);const q=V[j].map(x=>x/n);Q.push(q);for(let k=j+1;k<V.length;k++){const r=dot(q,V[k]);for(let i=0;i<q.length;i++)V[k][i]-=r*q[i];}}return Q;}
+function dev(Qc){let mx=0,bi=0,bj=1;for(let i=0;i<Qc.length;i++)for(let j=0;j<Qc.length;j++){const d=Math.abs(dot(Qc[i],Qc[j])-(i===j?1:0));if(d>mx){mx=d;if(i!==j){bi=i;bj=j;}}}let worst=0,wi=0,wj=1;for(let i=0;i<Qc.length;i++)for(let j=i+1;j<Qc.length;j++){const d=Math.abs(dot(Qc[i],Qc[j]));if(d>worst){worst=d;wi=i;wj=j;}}return{mx,wi,wj,ang:Math.acos(Math.min(1,worst))*180/Math.PI};}
+const matH=(M,d)=>`<span class="mat" style="grid-template-columns:repeat(${M[0].length},auto)">${M.flat().map(v=>`<span>${fx(v,d)}</span>`).join('')}</span>`;
+/* 평면 */
+function plane(w,h,x0,x1,y0,y1,pad){pad=pad==null?14:pad;const s=Math.min((w-2*pad)/(x1-x0),(h-2*pad)/(y1-y0));const ox=(w-(x1-x0)*s)/2-x0*s,oy=(h+(y1-y0)*s)/2+y0*s;return{s,x0,x1,y0,y1,X:x=>ox+x*s,Y:y=>oy-y*s,inv:(px,py)=>[(px-ox)/s,(oy-py)/s]};}
+function grid(c,P){c.lineWidth=1;for(let x=Math.ceil(P.x0);x<=P.x1;x++){c.strokeStyle=x===0?'#5a6b85':'#222b38';c.beginPath();c.moveTo(P.X(x),P.Y(P.y0));c.lineTo(P.X(x),P.Y(P.y1));c.stroke();if(x)T(c,String(x),P.X(x),P.Y(0)+9,'#5a6b85',9);}
+  for(let y=Math.ceil(P.y0);y<=P.y1;y++){c.strokeStyle=y===0?'#5a6b85':'#222b38';c.beginPath();c.moveTo(P.X(P.x0),P.Y(y));c.lineTo(P.X(P.x1),P.Y(y));c.stroke();if(y)T(c,String(y),P.X(0)-5,P.Y(y),'#5a6b85',9,'right');}}
+function arrowPx(c,x0,y0,x1,y1,col,lw,dash){const a=Math.atan2(y1-y0,x1-x0),L=Math.hypot(x1-x0,y1-y0);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=lw||2.5;c.setLineDash(dash||[]);const hs=Math.min(11,L*.45);
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x1-Math.cos(a)*hs*.7,y1-Math.sin(a)*hs*.7);c.stroke();c.setLineDash([]);if(L>2){c.beginPath();c.moveTo(x1,y1);c.lineTo(x1-hs*Math.cos(a-.42),y1-hs*Math.sin(a-.42));c.lineTo(x1-hs*Math.cos(a+.42),y1-hs*Math.sin(a+.42));c.closePath();c.fill();}}
+const arrow=(c,P,a,b,col,lw,dash)=>arrowPx(c,P.X(a[0]),P.Y(a[1]),P.X(b[0]),P.Y(b[1]),col,lw,dash);
+function rightMark(c,P,at,u,v,sz){const nu=nrm(u),nv=nrm(v);if(!nu||!nv)return;const ux=u[0]/nu,uy=-u[1]/nu,vx=v[0]/nv,vy=-v[1]/nv,x=P.X(at[0]),y=P.Y(at[1]);sz=sz||9;c.strokeStyle='#eff3f8';c.lineWidth=1.3;c.beginPath();c.moveTo(x+ux*sz,y+uy*sz);c.lineTo(x+(ux+vx)*sz,y+(uy+vy)*sz);c.lineTo(x+vx*sz,y+vy*sz);c.stroke();}
+const lab=(c,P,p,s,col,dx,dy,sz)=>T(c,s,P.X(p[0])+(dx||0),P.Y(p[1])+(dy||0),col,sz||12,'center','middle','700');
+function dragPts(cv,geo,pts,cb){let k=-1;const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('pointerdown',e=>{const P=geo();if(!P)return;const[px,py]=pos(e);let best=30,bi=-1;pts().forEach((p,i)=>{const q=p.get();const d=Math.hypot(P.X(q[0])-px,P.Y(q[1])-py);if(d<best){best=d;bi=i;}});if(bi>=0){k=bi;cv.setPointerCapture(e.pointerId);e.preventDefault();}});
+  cv.addEventListener('pointermove',e=>{if(k<0)return;const P=geo();const[px,py]=pos(e);const[x,y]=P.inv(px,py);if(pts()[k].set(Math.max(P.x0,Math.min(P.x1,x)),Math.max(P.y0,Math.min(P.y1,y))))vib(5);cb();});
+  const up=()=>{k=-1;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+const snapTo=(arr,x,y,st)=>{st=st||1;const nx=Math.round(x/st)*st,ny=Math.round(y/st)*st;if(nx===0&&ny===0)return false;if(arr[0]===nx&&arr[1]===ny)return false;arr[0]=nx;arr[1]=ny;return true;};
+
+/* ===== ① 첫 장면 ===== */
+const hkA=e=>[[1,1],[e,0],[0,e]];
+function normalSolve(A,b){const At=tr(A),M=mm(At,A),r=mv(At,b);const det=M[0][0]*M[1][1]-M[0][1]*M[1][0];if(det===0)return{err:'LinAlgError: Singular matrix',M,r};return{x:[(r[0]*M[1][1]-M[0][1]*r[1])/det,(M[0][0]*r[1]-M[1][0]*r[0])/det],M,r};}
+$('#hkN').onclick=()=>{const e=1e-8,A=hkA(e),b=mv(A,[1,1]),res=normalSolve(A,b);vib(80);
+  $('#hkOut').innerHTML=`AᵀA = [[1 + (1e-8)², 1], [1, 1 + (1e-8)²]] = [[1 + 1e-16, 1], [1, 1 + 1e-16]]\n<span class="p">→ 컴퓨터에 저장된 값:</span> [[${res.M[0][0]}, ${res.M[0][1]}], [${res.M[1][0]}, ${res.M[1][1]}]]   <span class="p">(1 + 1e-16 === 1 → ${1+1e-16===1})</span>\n<span class="e">${res.err||'x = '+res.x}</span>`;
+  $('#hkMsg').innerHTML='<div class="res r">답 대신 <b>특이 행렬이라 풀 수 없다</b>는 오류. 네 칸이 모두 1이 되어 역행렬이 없습니다. 이번엔 QR로 풀어 보세요.</div>';};
+$('#hkQ').onclick=()=>{const e=1e-8,A=hkA(e),b=mv(A,[1,1]),x=qrSolve(A,b);vib([20,40]);
+  $('#hkOut').innerHTML=`A = QR (하우스홀더)  →  Rx = Qᵀb  →  후진 대입\n<span class="o">x = [${x.map(v=>v.toPrecision(16).replace(/\.?0+$/,'')).join(', ')}]</span>   <span class="p">(정답 1, 1)</span>`;
+  $('#hkMsg').innerHTML='<div class="res g">같은 데이터인데 <b>1과 1</b>이 나왔습니다(마지막 자리의 10⁻¹⁶ 차이는 배정밀도의 한계 — 넘파이는 [1. 1.]로 표시). QR은 AᵀA를 만들지 않고 A를 <b>직접</b> 나누기 때문에 1억 분의 1을 끝까지 지킵니다. 비밀은 <b>④ 조건수</b> 탭에서.</div>';};
+
+/* ===== ① 그람 슈미트 ===== */
+const a1=[3,4],a2=[2,1];
+function gsQR(){const r11=nrm(a1),q1=a1.map(v=>v/r11),r12=dot(q1,a2),v=[a2[0]-r12*q1[0],a2[1]-r12*q1[1]],r22=nrm(v),q2=r22>1e-12?v.map(x=>x/r22):[NaN,NaN];return{r11,q1,r12,v,r22,q2,Q:[[q1[0],q2[0]],[q1[1],q2[1]]],R:[[r11,r12],[0,r22]]};}
+function gsDraw(){const g=gsQR();const{c,w,h}=prep($('#gsCv'),.78);const P=plane(w,h,-3.4,6.4,-3.4,5.4,8);gsDraw.P=P;grid(c,P);
+  const sh=g.q1.map(v=>v*g.r12);c.strokeStyle='#33425a';c.setLineDash([3,4]);c.beginPath();c.moveTo(P.X(-g.q1[0]*4),P.Y(-g.q1[1]*4));c.lineTo(P.X(g.q1[0]*8),P.Y(g.q1[1]*8));c.stroke();c.setLineDash([]);
+  c.strokeStyle=MU;c.setLineDash([5,4]);c.lineWidth=1.3;c.beginPath();c.moveTo(P.X(a2[0]),P.Y(a2[1]));c.lineTo(P.X(sh[0]),P.Y(sh[1]));c.stroke();c.setLineDash([]);
+  arrow(c,P,[0,0],sh,PU,3);if(g.r22>1e-9){arrow(c,P,[0,0],g.v,OK+'88',2,[4,4]);arrow(c,P,[0,0],g.q2,OK,4);rightMark(c,P,[0,0],g.q1,g.q2,8);}
+  arrow(c,P,[0,0],a1,CA,2.5);arrow(c,P,[0,0],a2,CB,2.5);arrow(c,P,[0,0],g.q1,GO,4);
+  lab(c,P,a1,'a₁',CA,10,-8,13);lab(c,P,a2,'a₂',CB,10,-8,13);lab(c,P,g.q1,'q₁',GO,-12,-2,12);if(g.r22>1e-9)lab(c,P,g.q2,'q₂',OK,12,6,12);lab(c,P,sh,'그림자',PU,0,14,10);
+  $('#gsM').innerHTML=g.r22>1e-9?`A ${matH([[a1[0],a2[0]],[a1[1],a2[1]]])} = Q ${matH(g.Q,3)} × R ${matH(g.R,3)}`:'';
+  $('#gsOut').innerHTML=g.r22>1e-9?`r₁₁ = ‖a₁‖ = <span class="w">${fx(g.r11)}</span>   <span class="p">← 줄인 길이</span>\nq₁ = a₁ ÷ ${fx(g.r11)} = (${fx(g.q1[0])}, ${fx(g.q1[1])})\nr₁₂ = q₁·a₂ = <span class="w">${fx(g.r12)}</span>   <span class="p">← a₂가 q₁ 방향에 드리운 그림자</span>\nv = a₂ − ${fx(g.r12)}·q₁ = (${fx(g.v[0])}, ${fx(g.v[1])})\nr₂₂ = ‖v‖ = <span class="w">${fx(g.r22)}</span>   <span class="p">← 남은 수직 성분의 길이</span>\nq₂ = v ÷ ${fx(g.r22)} = (${fx(g.q2[0])}, ${fx(g.q2[1])})`:`<span class="e">a₂가 a₁과 같은 방향 — 남은 수직 성분이 0이라 Q를 완성할 수 없습니다.</span>`;
+  dtDraw();}
+dragPts($('#gsCv'),()=>gsDraw.P,()=>[{get:()=>a1,set:(x,y)=>snapTo(a1,x,y)},{get:()=>a2,set:(x,y)=>snapTo(a2,x,y)}],()=>{gsDraw();bsS=0;bsDraw();});
+$('#gsEx').onclick=()=>{a1[0]=3;a1[1]=4;a2[0]=2;a2[1]=1;gsDraw();bsS=0;bsDraw();vib(10);};
+quiz('q1','a',ok=>`<div class="res ${ok?'g':'r'}">${ok?'정답!':'아쉬워요.'} 정답은 <b>5</b>. 실제로 곱하면 (0.6×3 + 0.8×4, 0.8×3 − 0.6×4) = <b>(5, 0)</b>. 원래 (3, 4)의 길이도 5 — 방향만 가로축으로 돌아갔을 뿐 길이는 그대로입니다. 벡터를 축 위로 눕혀 다른 성분을 0으로 만드는 것, 그것이 <b>③ 하우스홀더</b>의 핵심입니다.</div>`);
+
+/* ===== ① Q 성질 ===== */
+const QM=[[.6,.8],[.8,-.6]],qv=[3,4];
+function qvDraw(){const{c,w,h}=prep($('#qvCv'),.78);const P=plane(w,h,-5.4,5.4,-5.4,5.4,8);qvDraw.P=P;grid(c,P);const t=mv(QM,qv),phi=Math.atan2(.8,.6)/2,d=[Math.cos(phi),Math.sin(phi)];
+  c.strokeStyle=PU;c.setLineDash([6,5]);c.lineWidth=1.5;c.beginPath();c.moveTo(P.X(-d[0]*8),P.Y(-d[1]*8));c.lineTo(P.X(d[0]*8),P.Y(d[1]*8));c.stroke();c.setLineDash([]);lab(c,P,[d[0]*4.6,d[1]*4.6],'거울',PU,0,-10,10);
+  c.strokeStyle='#33425a';c.lineWidth=1;c.beginPath();c.arc(P.X(0),P.Y(0),P.s*nrm(qv),0,7);c.stroke();
+  arrow(c,P,[0,0],qv,CA,3);arrow(c,P,[0,0],t,GO,3);lab(c,P,qv,'v',CA,10,-8,13);lab(c,P,t,'Qv',GO,12,-8,13);
+  $('#qv1').textContent=fx(nrm(qv));$('#qv2').textContent=fx(nrm(t));
+  $('#qvOut').innerHTML=`Qv = (${fx(t[0])}, ${fx(t[1])})   <span class="p">— 같은 원 위에서만 움직임</span>\nQᵀQ = [[0.6·0.6+0.8·0.8, 0.6·0.8−0.8·0.6], [·, 0.8·0.8+0.6·0.6]] = [[1, 0], [0, 1]]\n<span class="p">그래서 Q⁻¹ = Qᵀ — 역행렬을 따로 계산할 필요 없이 행과 열만 바꾸면 끝. 이 Q는 보라색 직선에 비춘 <b>거울</b>입니다.</span>`;}
+dragPts($('#qvCv'),()=>qvDraw.P,()=>[{get:()=>qv,set:(x,y)=>snapTo(qv,x,y,.5)}],qvDraw);
+
+/* ===== ② 후진 대입 ===== */
+let bsS=0;
+function bsDraw(){const b=[+$('#bsB1').value,+$('#bsB2').value];$('#bsB1v').textContent=b[0];$('#bsB2v').textContent=b[1];const g=gsQR();const L=[];
+  const ok=g.r22>1e-9;if(!ok){$('#bsOut').innerHTML='<span class="e">① 탭의 a₁, a₂가 한 방향이라 풀 수 없습니다.</span>';$('#bsMsg').innerHTML='';return;}
+  const y=[g.q1[0]*b[0]+g.q1[1]*b[1],g.q2[0]*b[0]+g.q2[1]*b[1]];const x2=y[1]/g.r22,x1=(y[0]-g.r12*x2)/g.r11;
+  L.push(`A = [[${a1[0]}, ${a2[0]}], [${a1[1]}, ${a2[1]}]]   b = (${b[0]}, ${b[1]})`);
+  if(bsS>=1)L.push(`① Qᵀb = (q₁·b, q₂·b) = <span class="w">(${fx(y[0])}, ${fx(y[1])})</span>   <span class="p">← 역행렬 대신 전치</span>`);
+  if(bsS>=2)L.push(`② 아랫줄: ${fx(g.r22)}·x₂ = ${fx(y[1])}  →  x₂ = <span class="o">${fx(x2)}</span>`);
+  if(bsS>=3)L.push(`③ 윗줄: ${fx(g.r11)}·x₁ + ${fx(g.r12)}·${fx(x2)} = ${fx(y[0])}  →  x₁ = <span class="o">${fx(x1)}</span>`);
+  if(bsS>=4)L.push(`④ 검산: A·x = (${fx(a1[0]*x1+a2[0]*x2)}, ${fx(a1[1]*x1+a2[1]*x2)})  ✓`);
+  $('#bsOut').innerHTML=L.join('\n');$('#bsNext').disabled=bsS>=4;
+  const ex=a1+''==='3,4'&&a2+''==='2,1'&&b+''==='7,6';
+  $('#bsMsg').innerHTML=bsS>=4?`<div class="res g">${ex?'원고 예: b = (7, 6) → Qᵀb = <b>(9, 2)</b> → x = <b>(1, 2)</b>. 3 + 4 = 7, 4 + 2 = 6 확인! ':''}마지막 줄에는 미지수가 하나뿐이라 바로 풀리고, 그 값을 윗줄에 넣으면 또 하나가 풀립니다 — <b>후진 대입</b>.</div>`:'';}
+$('#bsNext').onclick=()=>{if(bsS<4){bsS++;bsDraw();vib(10);}};$('#bsReset').onclick=()=>{bsS=0;bsDraw();};$('#bsB1').oninput=()=>{bsS=Math.min(bsS,0);bsDraw();};$('#bsB2').oninput=()=>{bsS=0;bsDraw();};
+quiz('q2','a',ok=>`<div class="res ${ok?'g':'r'}">${ok?'정답!':'아쉬워요.'} 정답은 <b>(1, 2)</b>. 아랫줄 1·x₂ = 2 → <b>x₂ = 2</b>. 윗줄 5x₁ + 2·2 = 9 → 5x₁ = 5 → <b>x₁ = 1</b>. 처음 행렬에 넣으면 (3 + 4, 4 + 2) = (7, 6) ✓. (1.8, 2)는 아랫줄을 무시하고 9를 5로 나누기만 한 값입니다.</div>`);
+function dtDraw(){const g=gsQR();if(g.r22<=1e-9){$('#dtOut').innerHTML='<span class="e">a₁, a₂가 한 방향 → det(A) = 0</span>';return;}const dQ=g.Q[0][0]*g.Q[1][1]-g.Q[0][1]*g.Q[1][0],dA=a1[0]*a2[1]-a2[0]*a1[1];
+  $('#dtOut').innerHTML=`det(R) = r₁₁ × r₂₂ = ${fx(g.r11)} × ${fx(g.r22)} = <span class="w">${fx(g.r11*g.r22)}</span>   <span class="p">← 위 삼각 행렬은 대각선 곱</span>\ndet(Q) = <span class="w">${fx(dQ)}</span>   <span class="p">← 직교 행렬은 언제나 1 또는 −1</span>\ndet(A) = ${a1[0]}×${a2[1]} − ${a2[0]}×${a1[1]} = <span class="o">${dA}</span>   <span class="p">→ 크기 ${Math.abs(dA)} = det(R)</span>`;}
+
+/* ===== ③ 부동소수점 ===== */
+function fpDraw(){const k=+$('#fpK').value;$('#fpKv').textContent=k;const x=Math.pow(10,-k),a=1+x,d=a-1;
+  $('#fpOut').innerHTML=`x = 1e-${k}\n1 + x === 1 ?   <span class="${a===1?'e':'o'}">${a===1}</span>\n(1 + x) − 1 = ${d===0?'<span class="e">0</span>':d.toPrecision(17)}\n상대 오차 = ${d===0?'<span class="e">100% (완전히 사라짐)</span>':fx(Math.abs(d-x)/x)}   <span class="p">${k>=16?'← 1에 더하는 순간 지워짐':k>=10?'← 뺄셈 후 뒷자리가 흔들림':'← 아직 거의 정확'}</span>`;}
+$('#fpK').oninput=fpDraw;
+
+/* ===== ③ 힐베르트 ===== */
+const HCOND={3:520,4:1.6e4,5:4.8e5,6:1.5e7,7:4.8e8,8:1.5e10,9:4.9e11,10:1.6e13,11:5.2e14,12:1.6e16};
+function hbDraw(){const n=+$('#hbN').value;$('#hbNv').textContent=n;const H=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>1/(i+j+1)));
+  const Qh=cols(hhQR(H).Q);const r=[['고전 그람 슈미트',dev(cgs(H)),BAD],['수정 그람 슈미트',dev(mgs(H)),GO],['하우스홀더',dev(Qh),OK]];
+  const{c,w,h}=prep($('#hbCv'),.5);const L=110,R=w-60,lo=-17,hi=1;const X=v=>L+(R-L)*(Math.log10(Math.max(v,1e-17))-lo)/(hi-lo);
+  [-16,-12,-8,-4,0].forEach(e=>{c.strokeStyle='#1e2633';c.beginPath();c.moveTo(X(10**e),8);c.lineTo(X(10**e),h-22);c.stroke();T(c,e?`10${sup(e)}`:'1',X(10**e),h-12,'#5a6b85',9);});
+  r.forEach(([nm,d,col],i)=>{const y=14+i*((h-34)/3);T(c,nm,L-8,y+12,col,11,'right','middle','700');c.fillStyle=col;rr(c,L,y,Math.max(4,X(d.mx)-L),24,6);c.fill();{const e=Math.floor(Math.log10(Math.max(d.mx,1e-17))),m=d.mx/10**e;T(c,e===0?d.mx.toFixed(2):`${m.toFixed(1)}×10${sup(e)}`,X(d.mx)+6,y+12,'#eff3f8',11,'left','middle','700');}});
+  const cg=r[0][1];$('#hbOut').innerHTML=`<span class="p">max|QᵀQ − I| — 0에 가까울수록 정확히 직교 (이 기기에서 계산)</span>\n힐베르트 ${n}×${n} 조건수 ≈ ${fx(HCOND[n])}\n고전 방식에서 가장 어긋난 두 열: ${cg.wi+1}번째와 ${cg.wj+1}번째 → 사이 각도 <span class="${cg.ang<45?'e':'o'}">${cg.ang.toFixed(2)}°</span> <span class="p">(직각이어야 90°)</span>${n===10?'\n<span class="p">원고: 8·9번째 열 0.46°, 수정 방식 약 2/10000, 하우스홀더 10⁻¹⁵ 수준</span>':''}`;}
+$('#hbN').oninput=hbDraw;
+
+/* ===== ③ 하우스홀더 ===== */
+const hx=[3,4];
+function hhDraw(){const{c,w,h}=prep($('#hhCv'),.78);const P=plane(w,h,-5.4,5.4,-5.4,5.4,8);hhDraw.P=P;grid(c,P);const n=nrm(hx),t=[n,0];const u=[hx[0]-t[0],hx[1]-t[1]],nu=nrm(u);
+  let H=I(2);if(nu>1e-12){const v=u.map(x=>x/nu);H=[[1-2*v[0]*v[0],-2*v[0]*v[1]],[-2*v[1]*v[0],1-2*v[1]*v[1]]];const m=[hx[0]+t[0],hx[1]+t[1]],nm=nrm(m);
+    if(nm>1e-9){const d=m.map(x=>x/nm);c.strokeStyle=PU;c.setLineDash([6,5]);c.lineWidth=1.5;c.beginPath();c.moveTo(P.X(-d[0]*8),P.Y(-d[1]*8));c.lineTo(P.X(d[0]*8),P.Y(d[1]*8));c.stroke();c.setLineDash([]);lab(c,P,[d[0]*4.8,d[1]*4.8],'거울',PU,10,-10,10);}
+    c.strokeStyle='#5a6b85';c.setLineDash([3,4]);c.beginPath();c.moveTo(P.X(hx[0]),P.Y(hx[1]));c.lineTo(P.X(t[0]),P.Y(t[1]));c.stroke();c.setLineDash([]);}
+  c.strokeStyle='#33425a';c.beginPath();c.arc(P.X(0),P.Y(0),P.s*n,0,7);c.stroke();
+  const Hx=mv(H,hx).map(v=>Math.abs(v)<1e-12?0:v);arrow(c,P,[0,0],Hx,GO,3.5);arrow(c,P,[0,0],hx,CA,3);lab(c,P,hx,'x',CA,10,-8,13);lab(c,P,Hx,'Hx',GO,0,14,12);
+  $('#hhOut').innerHTML=`H = I − 2uuᵀ = [[${fx(H[0][0])}, ${fx(H[0][1])}], [${fx(H[1][0])}, ${fx(H[1][1])}]]\nHx = (${fx(Hx[0])}, ${fx(Hx[1])})   <span class="p">— 길이 ${fx(n)} 그대로, 아래 성분은 0</span>${hx+''==='3,4'?'\n<span class="p">퀴즈 ①의 Q가 바로 이 거울! (3, 4) → (5, 0)</span>':''}\n<span class="p">빼는 대신 비추니 뺄셈 오차가 덜 쌓이고, 열을 통째로 다뤄 묶어 계산하기도 좋아 수치 계산 도구들의 기본 방식입니다.</span>`;}
+dragPts($('#hhCv'),()=>hhDraw.P,()=>[{get:()=>hx,set:(x,y)=>snapTo(hx,x,y,.5)}],hhDraw);
+
+/* ===== ③ 기븐스 ===== */
+const GN=6;let GV=null,gvK=0,gvLast=null;
+function gvInit(){GV=Array.from({length:GN},(_,i)=>Array.from({length:GN},(_,j)=>i===j?4:Math.abs(i-j)===1?1:0));gvK=0;gvLast=null;}
+function gvDraw(){const{c,w,h}=prep($('#gvCv'),.66);const g=Math.min((w-20)/GN,(h-14)/GN),ox=(w-g*GN)/2,oy=7;
+  for(let i=0;i<GN;i++)for(let j=0;j<GN;j++){const v=GV[i][j],z=Math.abs(v)<1e-12,hl=gvLast&&(i===gvLast[0]||i===gvLast[0]+1);c.fillStyle=hl?(z?'#3a3218':'#4a3e1a'):z?'#141a23':'#1d3554';c.fillRect(ox+j*g+1,oy+i*g+1,g-2,g-2);
+    if(gvLast&&i===gvLast[0]+1&&j===gvLast[0]){c.strokeStyle=OK;c.lineWidth=2.5;c.strokeRect(ox+j*g+2,oy+i*g+2,g-4,g-4);}
+    if(!z)T(c,fx(v,2),ox+j*g+g/2,oy+i*g+g/2,'#eff3f8',Math.min(11,g*.3),'center','middle','600');else T(c,'0',ox+j*g+g/2,oy+i*g+g/2,'#3a4a63',Math.min(10,g*.28));}
+  $('#gvNext').disabled=gvK>=GN-1;
+  $('#gvOut').innerHTML=gvLast?`회전 ${gvK}: ${gvLast[0]+1}·${gvLast[0]+2}번째 줄만 돌림  c = ${fx(gvLast[1])}, s = ${fx(gvLast[2])}\n→ (${gvLast[0]+2}, ${gvLast[0]+1}) 칸이 정확히 0   <span class="p">건드린 줄: 2개 / ${GN}개</span>${gvK>=GN-1?'\n<span class="o">완성! 대각선 아래가 모두 0인 R — 회전 5번이면 끝.</span>':''}`:`<span class="p">${GN}×${GN} 삼중대각 행렬: 대각선 아래 0이 아닌 칸은 ${GN-1}개뿐. '다음 회전'을 눌러 보세요.</span>`;}
+$('#gvNext').onclick=()=>{if(gvK>=GN-1)return;const i=gvK,a=GV[i][i],b=GV[i+1][i],r=Math.hypot(a,b),cc=a/r,s=b/r;for(let j=0;j<GN;j++){const x=GV[i][j],y=GV[i+1][j];GV[i][j]=cc*x+s*y;GV[i+1][j]=-s*x+cc*y;}GV[i+1][i]=0;gvLast=[i,cc,s];gvK++;gvDraw();vib(10);};
+$('#gvReset').onclick=()=>{gvInit();gvDraw();};
+
+/* ===== ④ 조건수 ===== */
+function cnDraw(){const k=+$('#cnK').value;$('#cnKv').textContent=k;const e=Math.pow(10,-k),A=hkA(e),b=mv(A,[1,1]);const cA=Math.sqrt(2+e*e)/e;
+  $('#cn1').textContent=fx(cA);$('#cn2').textContent=fx(cA*cA);const ns=normalSolve(A,b),xq=qrSolve(A,b);const er=x=>Math.max(Math.abs(x[0]-1),Math.abs(x[1]-1));
+  const d=ns.M[0][0];
+  $('#cnOut').innerHTML=`AᵀA 대각선 = 1 + ε² = 1 + 1e-${2*k} → 저장된 값 ${d===1?'<span class="e">1 (차이가 사라짐)</span>':d.toPrecision(17)}\n교과서 공식: ${ns.err?`<span class="e">${ns.err}</span>`:`x = (${ns.x.map(v=>v.toPrecision(10)).join(', ')})   오차 <span class="${er(ns.x)>1e-6?'e':'o'}">${fx(er(ns.x))}</span>`}\nQR 분해:     x = (${xq.map(v=>v.toPrecision(10)).join(', ')})   오차 <span class="o">${fx(er(xq))}</span>`;
+  $('#cnMsg').innerHTML=`<div class="res ${ns.err||er(ns.x)>1e-4?'r':'g'}">조건수는 입력의 작은 오차가 답에서 <b>최대 몇 배</b>로 커질 수 있는지의 배율. AᵀA를 만들면 <b>제곱</b>이 됩니다(조건수 1,000 → 1,000,000). ${k===8?'첫 장면: cond(A) ≈ <b>1억 4천만</b>, AᵀA는 약 <b>2경</b> — 게다가 1 + 10⁻¹⁶이 1로 저장되어 <b>네 칸이 모두 1</b>, 역행렬이 없습니다.':ns.err?'AᵀA의 차이가 저장되지 못해 풀 수조차 없습니다.':'ε을 더 줄여 보세요.'} 반면 Q의 조건수는 정확히 <b>1</b>이라 QR은 조건수를 나빠지게 하지 않습니다.</div>`;}
+$('#cnK').oninput=cnDraw;
+
+/* ===== ④ QR 반복 ===== */
+let QA=null,qaH=[];
+function qaInit(){QA=[[2,1],[1,2]];qaH=[[2,2]];}
+function qaDraw(){$('#qaM').innerHTML=`A${sup(qaH.length-1).replace(/⁰/,'₀')} = [[${fx(QA[0][0],4)}, ${fx(QA[0][1],4)}], [${fx(QA[1][0],4)}, ${fx(QA[1][1],4)}]]`.replace(/^A[^ ]+/,`A${String(qaH.length-1).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[+d]).join('')}`);
+  const{c,w,h}=prep($('#qaCv'),.45);const L=30,R=w-12,Tp=10,B=h-22,N=10;const X=k=>L+(R-L)*k/N,Y=v=>B-(B-Tp)*(v-.5)/3;
+  [1,2,3].forEach(v=>{c.strokeStyle=v===1||v===3?'#2a4a3a':'#1e2633';c.beginPath();c.moveTo(L,Y(v));c.lineTo(R,Y(v));c.stroke();T(c,String(v),L-5,Y(v),'#5a6b85',9,'right');});T(c,'반복 →',R,B+14,MU,10,'right');
+  [[0,CA],[1,CB]].forEach(([j,col])=>{c.strokeStyle=col;c.lineWidth=2.5;c.beginPath();qaH.forEach((d,k)=>{k?c.lineTo(X(k),Y(d[j])):c.moveTo(X(k),Y(d[j]));});c.stroke();qaH.forEach((d,k)=>{c.beginPath();c.arc(X(k),Y(d[j]),3.5,0,7);c.fillStyle=col;c.fill();});});
+  $('#qaOut').innerHTML=qaH.map((d,k)=>`${k}회: 대각선 ${fx(d[0],4)}, ${fx(d[1],4)}`).join('\n')+(qaH.length>=6?'\n<span class="o">→ 고윳값 3과 1에 수렴! (원고: 2.8·1.2 → 2.9756·1.0244 → … → 3·1)</span>':'');$('#qaNext').disabled=qaH.length>N;}
+$('#qaNext').onclick=()=>{const{Q,R}=hhQR(QA);QA=mm(R,Q);qaH.push([QA[0][0],QA[1][1]]);qaDraw();vib(10);};$('#qaReset').onclick=()=>{qaInit();qaDraw();};
+
+/* 나의 예 */
+const MK='mirrorqr.mine';let mine=[];try{mine=JSON.parse(localStorage.getItem(MK)||'[]');if(!Array.isArray(mine))mine=[];}catch(e){mine=[];}
+const saveM=()=>{try{localStorage.setItem(MK,JSON.stringify(mine));}catch(e){}};
+function drawMine(){$('#mine').innerHTML=mine.length?mine.map((m,i)=>`<div><span>🪞 ${esc(m)}</span><button data-d="${i}" aria-label="지우기">✕</button></div>`).join(''):'<p class="note">그런 데이터일수록 계산하는 방법을 한 번 더 확인해 보세요.</p>';
+  $$('#mine button').forEach(b=>b.onclick=()=>{mine.splice(+b.dataset.d,1);saveM();drawMine();});}
+$('#myAdd').onclick=()=>{const v=$('#myIn').value.trim();if(!v)return;mine.unshift(v);mine=mine.slice(0,30);saveM();$('#myIn').value='';drawMine();toast('기록했습니다!');};
+$('#myIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#myAdd').click();});
+
+/* 탭 */
+function redraw(){if(!$('#tab-t1').hidden){gsDraw();qvDraw();}if(!$('#tab-t2').hidden){bsDraw();dtDraw();}if(!$('#tab-t3').hidden){fpDraw();hbDraw();hhDraw();gvDraw();}if(!$('#tab-t4').hidden){cnDraw();qaDraw();}}
+function show(t){$$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));['t1','t2','t3','t4'].forEach(k=>$('#tab-'+k).hidden=k!==t);redraw();window.scrollTo(0,0);}
+$$('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(redraw,120);});
+gvInit();qaInit();drawMine();redraw();
+})();
+</script>
+</body>
+</html>
